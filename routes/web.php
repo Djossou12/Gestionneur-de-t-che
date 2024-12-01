@@ -1,6 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProjetController;
+use App\Http\Controllers\TacheController;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +16,24 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Routes Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard');
+
+    // Routes Projets
+    Route::resource('projets', ProjetController::class)
+        ->except(['destroy']);
+
+    // Routes Tâches
+    Route::post('/projets/{projet}/taches', [TacheController::class, 'store'])
+        ->name('taches.store');
+    Route::put('/taches/{tache}', [TacheController::class, 'update'])
+        ->name('taches.update');
+
+    // Routes Admin (uniquement accessibles aux admins)
+    Route::middleware(['can:admin'])->group(function () {
+        Route::get('/admin/users', [UserController::class, 'index'])
+            ->name('admin.users');
+    });
 });
